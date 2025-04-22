@@ -100,9 +100,9 @@ terraform/
         ├── outputs.tf
         └── variables.tf
 
-After you generate all Terraform scripts required for the project, write them as files in /terraform project folder and corresponding subfolders/modules.
-Existing Terraform files must be overwritten.
-You MUST create ALL required modules and files. Do not postpone/expect that any files or modules will be created on next steps.
+After you generate all Terraform scripts required for the project, write them as files in destination repository in '/terraform' project folder and corresponding subfolders/modules.
+DO NOT write files outside '/terraform' folder. Existing Terraform files must be overwritten.
+You MUST create ALL required modules and files. DO NOT postpone/expect that any files or modules will be created on next steps.
 
 You MUST add all variables (from each module in 'variables.tf' files) into /terraform/variables.tf file.
 You should provide values for all variables in /terraform/terraform.tfvars file.

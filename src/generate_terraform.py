@@ -24,7 +24,12 @@ from src.tools.tools import get_image_file_content_tool, read_folder_structure_t
 load_dotenv()
 # Configure project and model
 src_dir = "/Users/vfedoriv/workspace/product-x/JavaPetClinic"
-work_dir_path = Path(src_dir)
+
+# Get source and destination repository directories from environment variables
+source_repo_dir = os.getenv("SOURCE_REPO_DIR", "/default/source/path")
+dest_repo_dir = os.getenv("DEST_REPO_DIR", "/default/destination/path")
+
+executor_dir_path = Path(dest_repo_dir)
 
 set_config([{
     "model": os.getenv("MODEL_NAME"),
@@ -78,7 +83,7 @@ code_executor_agent = BaseSDLCAgent(
     system_message="You are terraform scripts executor. You can be used to deploy infrastructure on the cloud. You can execute terraform commands.",
     code_execution_config={
         "executor": LocalCommandLineCodeExecutor(
-            work_dir=work_dir_path,
+            work_dir=executor_dir_path,
             timeout=120,
         )
     }
@@ -86,12 +91,12 @@ code_executor_agent = BaseSDLCAgent(
 
 
 # Register tools
-def register_tools(work_dir):
-    read_folder_structure = read_folder_structure_tool(work_dir)
-    get_file_content = get_file_content_tool(work_dir)
-    write_file_content = write_file_content_tool(work_dir)
+def register_tools(source_work_dir, dest_work_dir):
+    read_folder_structure = read_folder_structure_tool(source_work_dir)
+    get_file_content = get_file_content_tool(source_work_dir)
+    write_file_content = write_file_content_tool(dest_work_dir)
 
-    print(f"Creating tools with work_dir: {work_dir}")
+    print(f"Creating tools with source work_dir: {source_work_dir}, dest work_dir: {dest_work_dir}")
 
     # Register common tools for both analyzer and generator
     for agent in [analyzer_agent, generator_agent]:
@@ -126,7 +131,7 @@ def register_tools(work_dir):
         name="extract_infrastructure_from_image"
     )(lambda image_path, **kwargs: extract_infrastructure_from_image(
         image_path=image_path,
-        work_dir=work_dir,
+        work_dir=source_work_dir,
         llm_client=llm_wrapper,
         **kwargs
     ))
@@ -195,19 +200,20 @@ def extract_infrastructure_from_image(
         return {"status": "error", "message": str(e)}
 
 # Main execution function
-def generate_terraform_infrastructure(project_path, message=None):
+def generate_terraform_infrastructure(source_project_path, dest_repo_path, message=None):
     """
     Analyze project and generate Terraform infrastructure
 
     Args:
-        project_path: Path to the project directory
+        source_project_path: Path to the source project directory
+        dest_repo_path: Path to the destination repository directory
         message: Optional custom message with requirements
     """
     # Add debug tracing
-    print("Setting up workspace for project path:", project_path)
+    print("Setting up workspace for project path:", source_project_path)
 
     # Register tools for agents
-    register_tools(project_path)
+    register_tools(source_project_path, dest_repo_path)
     print("Tools registered successfully")
 
     # Define transitions
@@ -258,8 +264,11 @@ def generate_terraform_infrastructure(project_path, message=None):
 
     # Default message if none provided
     if not message:
-        message = f"I want to recognize cloud infrastructure for the project and create Terraform scripts/modules to implement it. Project folder: {project_path}"
-
+        message = (
+            f"I want to recognize cloud infrastructure for the source project and create Terraform "
+            f"scripts/modules in destination project to implement it. Source project folder: {source_repo_dir}, "
+            f"destination project folder: {dest_repo_dir}."
+        )
     result = workflow.run_core(message=message, llm_config=llm_config, max_round=100)
 
     return result
@@ -267,7 +276,6 @@ def generate_terraform_infrastructure(project_path, message=None):
 
 # Run the generator when executed directly
 if __name__ == "__main__":
-    src_dir = "/Users/vfedoriv/workspace/product-x/JavaPetClinic"
-    result = generate_terraform_infrastructure(src_dir)
+    result = generate_terraform_infrastructure(source_repo_dir, dest_repo_dir)
     print("Terraform generation complete!")
-    print(f"Generated files in: {src_dir}")
+    print(f"Generated files in: {dest_repo_dir}")
