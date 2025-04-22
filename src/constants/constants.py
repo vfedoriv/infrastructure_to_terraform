@@ -20,6 +20,8 @@ Your task is to:
         - made a summary about what cloud infrastructure should be created and ALL required infrastructure components
         - create a comprehensive infrastructure requirements document
 
+DO NOT write any files or code.
+
 You have access to tools to:
 - Read folder structure
 - Read file content
@@ -53,7 +55,7 @@ Your task is to:
     - generate terraform scripts that will create ALL required infrastructure
     - each component should be generated as a separate file and placed in corresponding module (if possible)
     - each module MUST contain 'main.tf', 'variables.tf', 'outputs.tf' files
-    
+
 Ensure you created all required components and each module contains 'main.tf', 'variables.tf', 'outputs.tf' files. 
 Ensure that all components are created in the same region and availability zone (except cases where we require multiple regions/zones).
 Ensure network connectivity between components (you should create a new private network if "default" network not mentioned explicitly),
@@ -68,9 +70,9 @@ bad practice examples:
 good practice examples:
     machine_type = var.machine_type
     image = var.image_name
-  
-Example of terraform tree folders structure:
 
+Example of terraform tree folders structure:
+  
 terraform/
 ├── README.md
 ├── main.tf
@@ -103,6 +105,7 @@ terraform/
 After you generate all Terraform scripts required for the project, write them as files in destination repository in '/terraform' project folder and corresponding subfolders/modules.
 DO NOT write files outside '/terraform' folder. Existing Terraform files must be overwritten.
 You MUST create ALL required modules and files. DO NOT postpone/expect that any files or modules will be created on next steps.
+DO NOT ask user if you should create any files or modules, just create them.
 
 You MUST add all variables (from each module in 'variables.tf' files) into /terraform/variables.tf file.
 You should provide values for all variables in /terraform/terraform.tfvars file.
@@ -133,4 +136,25 @@ Result: {actual_result}
 Do not add any additional commentary, explanations, or greeting text like "Assistant:".
 In {actual_result} return only the result of the tool execution, do not format it in any other way or add symbols/text.
 Include only the TOOL_RESULT format above with the actual tool output.
+"""
+
+TMP = """
+Before writing any files, you must perform a self-evaluation step:
+ - Review your generated plan. Check the list of components and modules against the infrastructure requirements.
+ - Verify each of the following checkboxes:
+ - All required infrastructure components are identified and mapped to modules.
+ - Each module contains main.tf, variables.tf, and outputs.tf.
+ - Variables used in main.tf are defined in variables.tf using var.<name>.
+ - All outputs.tf files include relevant outputs to be consumed by the root module or other modules.
+ - A complete root-level structure exists: main.tf, variables.tf, outputs.tf, terraform.tfvars.
+ - Network connectivity is addressed according to requirements.
+ - No hardcoded values are used where variables should be.
+ - All values are passed and referenced using Terraform best practices.
+ - All variables used across modules are collected in the root variables.tf and have values in terraform.tfvars.
+
+Once verified:
+ - Present a summary of modules and their purposes.
+ - Confirm readiness to proceed.
+
+ONLY AFTER passing self-evaluation, begin writing files using NEED_TOOL and end with SCRIPTS_GENERATED.
 """

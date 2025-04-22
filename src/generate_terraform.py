@@ -22,8 +22,6 @@ from src.constants.constants import (
 from src.tools.tools import get_image_file_content_tool, read_folder_structure_tool
 
 load_dotenv()
-# Configure project and model
-src_dir = "/Users/vfedoriv/workspace/product-x/JavaPetClinic"
 
 # Get source and destination repository directories from environment variables
 source_repo_dir = os.getenv("SOURCE_REPO_DIR", "/default/source/path")
@@ -80,7 +78,7 @@ tool_executor_agent = BaseSDLCAgent(
 code_executor_agent = BaseSDLCAgent(
     name="TerraformScriptExecutor",
     human_input_mode="NEVER",
-    system_message="You are terraform scripts executor. You can be used to deploy infrastructure on the cloud. You can execute terraform commands.",
+    system_message="You are Terraform scripts executor. You can be used to deploy infrastructure on the cloud. You can execute terraform commands.",
     code_execution_config={
         "executor": LocalCommandLineCodeExecutor(
             work_dir=executor_dir_path,
@@ -180,11 +178,11 @@ def extract_infrastructure_from_image(
         else:
             content.insert(0, {
                 "type": "text",
-                "text": "Please describe the image. At first, assume it is a diagram of cloud infrastructure. If it is not, please return text 'it's not a infrastructure related image/diagram`."
+                "text": "Please give me a detail description of the image, assuming it is a diagram of cloud infrastructure. Describe also links between components (if present). If provided image not a diagram of cloud infrastructure, please return text 'it's not a infrastructure related image/diagram`."
             })
 
         messages = [
-            {"role": "system", "content": "You are an AI that recognizes and describes images/diagrams."},
+            {"role": "system", "content": "You are an AI assistant that recognizes and describes cloud infrastructure images/diagrams."},
             {"role": "user", "content": content}
         ]
 
@@ -266,7 +264,7 @@ def generate_terraform_infrastructure(source_project_path, dest_repo_path, messa
     if not message:
         message = (
             f"I want to recognize cloud infrastructure for the source project and create Terraform "
-            f"scripts/modules in destination project to implement it. Source project folder: {source_repo_dir}, "
+            f"scripts/modules in destination project subfolder /terraform to implement it. Source project folder: {source_repo_dir}, "
             f"destination project folder: {dest_repo_dir}."
         )
     result = workflow.run_core(message=message, llm_config=llm_config, max_round=100)
