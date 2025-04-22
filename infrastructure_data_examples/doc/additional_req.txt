@@ -1,0 +1,2 @@
+We should include dedicated instances to deploy monitoring tools - Prometheus
+and visualization tools - Grafana.
